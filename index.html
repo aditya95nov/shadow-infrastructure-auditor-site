@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIA | Shadow Infrastructure Auditor</title>
+  <meta
+    name="description"
+    content="SIA helps engineering teams uncover AWS waste, quantify savings, and prioritize the highest-impact optimizations."
+  >
+  <style>
+    :root {
+      --bg: #081018;
+      --bg-soft: #0f1722;
+      --panel: rgba(15, 23, 34, 0.82);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --muted: #a6b0c0;
+      --accent: #4ade80;
+      --accent-strong: #22c55e;
+      --accent-soft: rgba(74, 222, 128, 0.16);
+      --warning: #facc15;
+      --max-width: 1120px;
+      --radius: 24px;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(34, 197, 94, 0.14), transparent 28%),
+        radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.14), transparent 22%),
+        linear-gradient(180deg, #050b12 0%, var(--bg) 45%, #07111a 100%);
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(var(--max-width), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(8, 16, 24, 0.78);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent) 0%, #38bdf8 100%);
+      color: #041017;
+      font-weight: 800;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+      color: #03210d;
+      box-shadow: 0 18px 40px rgba(34, 197, 94, 0.28);
+    }
+
+    .button-secondary {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+    }
+
+    .hero {
+      padding: 72px 0 56px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #c7f9d8;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 20px 0 16px;
+      font-size: clamp(2.6rem, 6vw, 4.9rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 1.12rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .hero-points {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 24px;
+      margin-top: 22px;
+      color: #d6e2ee;
+      font-size: 0.96rem;
+    }
+
+    .hero-points span::before {
+      content: "•";
+      color: var(--accent);
+      margin-right: 8px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .preview {
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -30% auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(34, 197, 94, 0.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .preview-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 20px;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .stat-value.green {
+      color: var(--accent);
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.025);
+      color: #d8e2ee;
+      font-size: 0.94rem;
+    }
+
+    section {
+      padding: 34px 0;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: clamp(1.9rem, 3.5vw, 3rem);
+      letter-spacing: -0.03em;
+    }
+
+    .section-copy {
+      margin: 0;
+      color: var(--muted);
+      max-width: 72ch;
+    }
+
+    .features,
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .feature,
+    .step,
+    .pricing-card {
+      padding: 24px;
+    }
+
+    .feature h3,
+    .step h3,
+    .pricing-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+    }
+
+    .feature p,
+    .step p,
+    .pricing-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .step-number {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: rgba(74, 222, 128, 0.12);
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .pricing-wrap {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .pricing-card.highlight {
+      border: 1px solid rgba(74, 222, 128, 0.32);
+      background: linear-gradient(180deg, rgba(74, 222, 128, 0.12), rgba(255, 255, 255, 0.03));
+    }
+
+    .price {
+      margin: 16px 0 14px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+    }
+
+    .price small {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: var(--muted);
+      letter-spacing: 0;
+      font-weight: 500;
+    }
+
+    .pricing-list,
+    .footer-links {
+      padding: 0;
+      margin: 18px 0 0;
+      list-style: none;
+      color: #dce7f2;
+    }
+
+    .pricing-list li {
+      margin: 10px 0;
+    }
+
+    .pricing-list li::before {
+      content: "✓";
+      color: var(--accent);
+      margin-right: 10px;
+    }
+
+    .note {
+      margin-top: 16px;
+      color: var(--warning);
+      font-size: 0.92rem;
+    }
+
+    .cta {
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      margin-top: 26px;
+    }
+
+    .cta p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    footer {
+      padding: 42px 0 54px;
+      color: var(--muted);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 18px;
+      margin: 0;
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid,
+      .pricing-wrap,
+      .features,
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .cta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav-inner {
+        flex-direction: column;
+        padding: 14px 0;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 46px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#">
+        <span class="brand-mark">S</span>
+        <span>SIA <span style="color: var(--muted); font-weight: 500;">Shadow Infrastructure Auditor</span></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a class="button button-primary" href="mailto:adifreelancing@gmail.com?subject=Request%20a%20SIA%20demo">Book a demo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">AWS cost intelligence</span>
+          <h1>Find hidden AWS waste before it drains your margin.</h1>
+          <p>
+            SIA audits your AWS footprint, identifies optimization opportunities across compute, storage,
+            data transfer, and managed services, then turns the results into a clear savings roadmap your team can act on.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="mailto:adifreelancing@gmail.com?subject=Request%20a%20SIA%20demo">Request a demo</a>
+            <a class="button button-secondary" href="#pricing">See pricing</a>
+          </div>
+          <div class="hero-points">
+            <span>Read-only access</span>
+            <span>Executive-grade reports</span>
+            <span>Actionable implementation roadmap</span>
+          </div>
+        </div>
+
+        <aside class="card preview">
+          <div class="preview-head">
+            <strong>Sample audit snapshot</strong>
+            <span>Generated in minutes</span>
+          </div>
+          <div class="preview-grid">
+            <div class="stat">
+              <div class="stat-label">Current monthly spend</div>
+              <div class="stat-value">$38,420</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Projected savings</div>
+              <div class="stat-value green">$12,870</div>
+            </div>
+          </div>
+          <div class="mini-list">
+            <div class="mini-row">
+              <span>Idle EC2 instances</span>
+              <strong>$3,240/mo</strong>
+            </div>
+            <div class="mini-row">
+              <span>RDS reserved instance opportunity</span>
+              <strong>$2,980/mo</strong>
+            </div>
+            <div class="mini-row">
+              <span>S3 lifecycle + tiering gaps</span>
+              <strong>$1,430/mo</strong>
+            </div>
+            <div class="mini-row">
+              <span>12-month projected savings</span>
+              <strong>$154,440</strong>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="container">
+        <h2 class="section-title">Built for teams that want numbers, not vague advice.</h2>
+        <p class="section-copy">
+          SIA combines cloud cost visibility, prioritization, and implementation planning in one report so you can go from “we should optimize cloud spend” to a concrete, defensible savings program.
+        </p>
+        <div class="features">
+          <article class="card feature">
+            <h3>Service-level savings breakdown</h3>
+            <p>Surface savings across EC2, RDS, EBS, S3, Lambda, DynamoDB, load balancers, NAT, EKS, and more.</p>
+          </article>
+          <article class="card feature">
+            <h3>12-month projection</h3>
+            <p>Show leadership the baseline, the optimized future state, and what savings look like over time.</p>
+          </article>
+          <article class="card feature">
+            <h3>Implementation roadmap</h3>
+            <p>Prioritize quick wins and larger projects so engineering, finance, and leadership stay aligned.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works">
+      <div class="container">
+        <h2 class="section-title">How it works</h2>
+        <p class="section-copy">
+          SIA is designed to make onboarding low-friction and the output immediately useful for technical and business stakeholders.
+        </p>
+        <div class="steps">
+          <article class="card step">
+            <div class="step-number">1</div>
+            <h3>Connect AWS read-only access</h3>
+            <p>Use short-lived credentials or a scoped IAM role to let SIA inspect your AWS estate safely.</p>
+          </article>
+          <article class="card step">
+            <div class="step-number">2</div>
+            <h3>Run the audit</h3>
+            <p>SIA gathers usage, cost, and configuration signals to identify waste and rank the biggest opportunities.</p>
+          </article>
+          <article class="card step">
+            <div class="step-number">3</div>
+            <h3>Get a decision-ready report</h3>
+            <p>Receive a clean report with current spend, projected savings, risks, and an implementation plan.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <div class="container">
+        <h2 class="section-title">Simple pricing for high-impact audits.</h2>
+        <p class="section-copy">
+          Pick the model that fits how you want to engage. For most teams, we recommend the option that aligns price with measurable outcome.
+        </p>
+        <div class="pricing-wrap">
+          <div class="card pricing-card highlight">
+            <h3>Recommended</h3>
+            <div class="price">
+              $4,999
+              <small>fixed audit fee</small>
+            </div>
+            <ul class="pricing-list">
+              <li>Full AWS cost audit</li>
+              <li>Executive summary + engineering roadmap</li>
+              <li>Prioritized recommendations with projected savings</li>
+              <li>Perfect for first-time engagements</li>
+            </ul>
+          </div>
+
+          <div class="card pricing-card">
+            <h3>Outcome-aligned</h3>
+            <div class="price">
+              50% of projected savings
+              <small>based on SIA's modeled savings opportunity</small>
+            </div>
+            <ul class="pricing-list">
+              <li>Best for teams that want pricing tied to upside</li>
+              <li>Great for multi-team or larger AWS estates</li>
+              <li>Designed for stronger alignment on value delivered</li>
+            </ul>
+            <p class="note">You can position this as: "$4,999 or 50% of projected savings, whichever model fits the engagement."</p>
+          </div>
+        </div>
+
+        <div class="card cta">
+          <div>
+            <h3 style="margin: 0;">Want a tailored walkthrough?</h3>
+            <p>We’ll show how SIA evaluates your AWS footprint and where the biggest savings usually come from.</p>
+          </div>
+          <a class="button button-primary" href="mailto:adifreelancing@gmail.com?subject=Request%20a%20SIA%20demo">Book a demo</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div>
+        <strong>SIA</strong>
+        <div>Shadow Infrastructure Auditor</div>
+      </div>
+      <ul class="footer-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>
